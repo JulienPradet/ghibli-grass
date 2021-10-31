@@ -1,0 +1,18 @@
+{
+  "name": "ghibli-grass",
+  "version": "1.0.0",
+  "description": "Submission for WCCChallenge by sabelraph. Theme: Flowers",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Julien Pradet",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "dependencies": {
+    "canvas-sketch-util": "^1.10.0",
+    "vite": "^2.6.10"
+  },
+  "devDependencies": {}
+}
