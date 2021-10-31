@@ -1,20 +1,25 @@
 import random from "canvas-sketch-util/random";
+import JSZip from "jszip";
 import { hsvToFillStyle } from "./util";
 
 const canvas = document.querySelector("#canvas");
 
 async function draw() {
-  console.log("draw");
-  canvas.style.opacity = 0.7;
   await tick();
 
   random.setSeed(random.getRandomSeed());
 
   // I prefer portrait renders
   // -> less flowers on the front which feels a bit more natural
-  const width = (canvas.width = window.innerWidth);
-  const height = (canvas.height = window.innerHeight);
+  // const width = (canvas.width = window.innerWidth);
+  // const height = (canvas.height = window.innerHeight);
+
+  const width = (canvas.width = 728);
+  const height = (canvas.height = 728);
   const ctx = canvas.getContext("2d");
+  // Trick to make sure that y === 0 is at the bottom and y === height is at the top
+  ctx.translate(0, height);
+  ctx.scale(1, -1);
 
   const widthRatio = 0.3;
   const horizonHeight = height * random.gaussian(0.67, 0.01);
@@ -190,7 +195,6 @@ async function draw() {
   });
 
   await tick();
-  canvas.style.opacity = 1;
 
   function Color(h, s, v, a = 1) {
     return {
@@ -321,7 +325,15 @@ async function draw() {
   }
 }
 
-draw();
+let exportedUrls = [];
+async function frame(t) {
+  await draw();
+  exportedUrls.push(canvas.toDataURL("image/png"));
+  generateZip();
+}
+
+frame(0);
+
 
 document.body.addEventListener("click", function () {
   draw();
@@ -335,8 +347,6 @@ document.body.addEventListener("keyup", function (event) {
 
 let resizeTimeout;
 window.addEventListener("resize", function (event) {
-  canvas.style.opacity = 0.7;
-
   if (resizeTimeout) {
     clearTimeout(resizeTimeout);
   }
@@ -353,3 +363,25 @@ function tick() {
     });
   });
 }
+
+function generateZip () {
+  var zip = new JSZip();
+  exportedUrls.forEach((imgData, index) => {
+    zip.file(
+      `${index.toString().padStart(3, "0")}.png`,
+      imgData.split(";base64,")[1],
+      {
+        base64: true,
+      }
+    );
+  });
+  zip.generateAsync({ type: "blob" }).then(function (blob) {
+    // see FileSaver.js
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "export.zip";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  });
+};
